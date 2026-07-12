@@ -13,8 +13,6 @@ import pandas as pd
 import numpy as np
 import pickle
 import json
-import plotly.express as px
-import plotly.graph_objects as go
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 try:
