@@ -17,3 +17,5 @@ openpyxl
 xgboost
 
 pillow
+
+schedule

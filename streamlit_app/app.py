@@ -15,11 +15,7 @@ import pickle
 import json
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-try:
-    import shap
-except Exception as e:
-    shap = None
-    print("Erreur SHAP :", e)
+import shap
 from collections import Counter
 
 
