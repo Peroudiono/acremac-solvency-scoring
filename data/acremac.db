@@ -1,0 +1,108 @@
+cd /home/claude && python3 << 'EOF'
+import pandas as pd
+import sqlite3
+import os
+
+# Charger le dataset ACREMAC
+df = pd.read_excel("/mnt/user-data/uploads/Dataset_scoring_solvabilite_ACREMAC.xlsx")
+
+print(f"✅ Dataset chargé : {df.shape}")
+print(f"   Colonnes : {list(df.columns)}")
+print(f"   Types :\n{df.dtypes}")
+print(f"\n   Aperçu :\n{df.head(3)}")
+
+# Créer la base SQLite
+conn = sqlite3.connect('/home/claude/acremac.db')
+cursor = conn.cursor()
+
+# Créer la table clients
+cursor.execute("DROP TABLE IF EXISTS clients")
+cursor.execute("""
+CREATE TABLE clients (
+    client_id              TEXT PRIMARY KEY,
+    client_type            TEXT,
+    age                    INTEGER,
+    annual_income          REAL,
+    loan_amount            REAL,
+    loan_duration_months   INTEGER,
+    interest_rate          REAL,
+    past_defaults          INTEGER,
+    credit_history_years   REAL,
+    existing_loans         INTEGER,
+    monthly_payment_ratio  REAL,
+    collateral_value       REAL,
+    sector                 TEXT,
+    country                TEXT,
+    days_late_avg          REAL,
+    solvency_score         REAL
+)
+""")
+
+# Insérer les données
+df.to_sql('clients', conn, if_exists='replace', index=False)
+
+# Vérification
+count = cursor.execute("SELECT COUNT(*) FROM clients").fetchone()[0]
+sample = cursor.execute("SELECT * FROM clients LIMIT 3").fetchall()
+cols = [d[0] for d in cursor.description]
+
+print(f"\n✅ Base SQLite créée : acremac.db")
+print(f"   Table 'clients' : {count} enregistrements")
+print(f"   Colonnes : {cols}")
+
+# Test requête SQL
+result = cursor.execute("""
+    SELECT country, COUNT(*) as nb, AVG(solvency_score) as score_moy
+    FROM clients
+    GROUP BY country
+    ORDER BY score_moy DESC
+""").fetchall()
+print(f"\n✅ Test requête SQL :")
+for row in result:
+    print(f"   {row[0]} : {row[1]} clients | score moy = {row[2]:.1f}")
+
+conn.close()
+print("\n✅ Base SQLite prête !")
+EOF
+Sortie
+
+✅ Dataset chargé : (200, 16)
+   Colonnes : ['client_id', 'client_type', 'age', 'annual_income', 'loan_amount', 'loan_duration_months', 'interest_rate', 'past_defaults', 'credit_history_years', 'existing_loans', 'monthly_payment_ratio', 'collateral_value', 'sector', 'country', 'days_late_avg', 'solvency_score']
+   Types :
+client_id                    str
+client_type                  str
+age                        int64
+annual_income              int64
+loan_amount                int64
+loan_duration_months       int64
+interest_rate            float64
+past_defaults              int64
+credit_history_years       int64
+existing_loans             int64
+monthly_payment_ratio    float64
+collateral_value           int64
+sector                       str
+country                      str
+days_late_avg              int64
+solvency_score             int64
+dtype: object
+
+   Aperçu :
+  client_id        client_type  age  ...   country  days_late_avg  solvency_score
+0   C100000  Personne_physique   44  ...     Tchad              2             695
+1   C100001    Personne_morale   31  ...  Cameroun             26             695
+2   C100002    Personne_morale   69  ...     Congo            113             545
+
+[3 rows x 16 columns]
+
+✅ Base SQLite créée : acremac.db
+   Table 'clients' : 200 enregistrements
+   Colonnes : ['client_id', 'client_type', 'age', 'annual_income', 'loan_amount', 'loan_duration_months', 'interest_rate', 'past_defaults', 'credit_history_years', 'existing_loans', 'monthly_payment_ratio', 'collateral_value', 'sector', 'country', 'days_late_avg', 'solvency_score']
+
+✅ Test requête SQL :
+   Gabon : 45 clients | score moy = 632.9
+   Congo : 57 clients | score moy = 616.7
+   Tchad : 48 clients | score moy = 611.2
+   Cameroun : 50 clients | score moy = 603.9
+
+✅ Base SQLite prête !
