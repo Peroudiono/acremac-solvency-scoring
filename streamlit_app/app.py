@@ -412,16 +412,11 @@ def get_stats_categorie():
 
 @st.cache_resource
 def charger_modele():
-    import sklearn
-    import pickle
-    import os
-    st.write("SKLEARN VERSION =", sklearn.__version__)
+    
     base = os.path.dirname(os.path.abspath(__file__))
-    chemin = os.path.join(base, '..', 'models', 'model_gradient_boosting.pkl')
-    st.write("Chargement :", chemin)
-    with open(chemin, 'rb') as f:
+    with open(os.path.join(base, '..', 'models', 'model_gradient_boosting.pkl'), 'rb') as f:
+
         model = pickle.load(f)
-    st.success("MODELE CHARGE")
     return model
 
 @st.cache_resource
