@@ -412,6 +412,8 @@ def get_stats_categorie():
 
 @st.cache_resource
 def charger_modele():
+    import sklearn
+    st.write("SKLEARN =", sklearn.__version__)
     base = os.path.dirname(os.path.abspath(__file__))
     with open(os.path.join(base, '..', 'models', 'model_gradient_boosting.pkl'), 'rb') as f:
         model = pickle.load(f)
@@ -419,6 +421,8 @@ def charger_modele():
 
 @st.cache_resource
 def charger_shap():
+    
+    
     base = os.path.dirname(os.path.abspath(__file__))
     shap_df = pd.read_csv(os.path.join(base, '..', 'shap_results', 'shap_values_df.csv'))
     with open(os.path.join(base, '..', 'shap_results', 'shap_config.json'), 'r') as f:
